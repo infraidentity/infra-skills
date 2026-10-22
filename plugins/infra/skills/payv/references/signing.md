@@ -7,7 +7,8 @@ INFRA's quote (`402`) carries the x402 payment requirements in `accepts[0]`:
   "scheme": "exact", "network": "base-sepolia", "maxAmountRequired": "950000",
   "payTo": "0x…", "asset": "0x…", "maxTimeoutSeconds": 600,
   "resource": "/api/v1/payv/verification", "description": "INFRA verification reuse fee",
-  "mimeType": "application/json"
+  "mimeType": "application/json",
+  "extra": { "name": "USDC", "version": "2" }
 }
 ```
 
@@ -15,10 +16,12 @@ The payer signs an EIP-3009 `TransferWithAuthorization` for exactly that, and
 your server sends it as `X-PAYMENT`. Shared pieces (any language):
 
 ```js
-// The USDC EIP-712 domain differs by network. The quote doesn't include it.
+// The token's EIP-712 domain comes in the quote (accepts[0].extra). These are
+// Circle USDC's values, only used if extra is missing.
+const CHAIN_ID = { base: 8453, 'base-sepolia': 84532 };
 const USDC_DOMAIN = {
-  'base-sepolia': { name: 'USDC', version: '2', chainId: 84532 },
-  base: { name: 'USD Coin', version: '2', chainId: 8453 },
+  'base-sepolia': { name: 'USDC', version: '2' },
+  base: { name: 'USD Coin', version: '2' },
 };
 
 const TYPES = {
@@ -30,8 +33,9 @@ const TYPES = {
 };
 
 function typedDataFor(req, from, nonce) {
-  const d = USDC_DOMAIN[req.network];
-  if (!d) throw new Error(`Unsupported network ${req.network}`);
+  const chainId = CHAIN_ID[req.network];
+  if (!chainId) throw new Error(`Unsupported network ${req.network}`);
+  const { name, version } = req.extra?.name && req.extra?.version ? req.extra : USDC_DOMAIN[req.network];
   const now = Math.floor(Date.now() / 1000);
   const authorization = {
     from,
@@ -44,7 +48,7 @@ function typedDataFor(req, from, nonce) {
   return {
     authorization, // what goes into X-PAYMENT, as strings
     typedData: {
-      domain: { ...d, verifyingContract: req.asset },
+      domain: { name, version, chainId, verifyingContract: req.asset },
       types: TYPES,
       primaryType: 'TransferWithAuthorization',
       message: { ...authorization, value: BigInt(authorization.value),
@@ -139,9 +143,7 @@ derives the primary type, so pass `types` without `EIP712Domain`).
 
 ## Using an x402 client library
 
-Coinbase's x402 libraries work, but they look for the USDC domain in
-`accepts[0].extra.name` / `extra.version`, which INFRA's quote doesn't send.
-Add `extra: { name, version }` from the table above before handing the
-requirements to the library, and send the result as `X-PAYMENT` together with
-`payment_request_id` in the JSON body (a library's automatic retry won't add
-it for you).
+Coinbase's x402 libraries work with `accepts[0]` as it is (they read the
+token's domain from `extra`). Send their result as `X-PAYMENT` together with
+`payment_request_id` in the JSON body: a library's automatic retry won't add
+it for you.
