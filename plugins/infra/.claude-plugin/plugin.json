@@ -1,0 +1,20 @@
+{
+  "name": "infra",
+  "version": "0.1.0",
+  "description": "Build with INFRA identity: Sign in with INFRA (OAuth 2.0 + PKCE), webhooks and deletion requests, and an integration review.",
+  "author": {
+    "name": "INFRA",
+    "url": "https://infraidentity.com"
+  },
+  "homepage": "https://docs.infraidentity.com",
+  "keywords": [
+    "infra",
+    "identity",
+    "kyc",
+    "oauth",
+    "pkce",
+    "webhooks"
+  ],
+  "repository": "https://github.com/infraidentity/infra-skills",
+  "license": "MIT"
+}
