@@ -42,8 +42,8 @@ https://docs.infraidentity.com/llms-full.txt
 - On a Pay-As-You-Verify app, Connect returns no data: it comes from the
   paid PayV call.
 - PayV: sign exactly what INFRA's 402 quote says (amount, asset, network,
-  `payTo`); never hard-code the fee. USDC signing domain: name `USDC` on
-  `base-sepolia`, `USD Coin` on `base`, version `2`. Send one
+  `payTo`, and the token domain in `accepts[0].extra`); never hard-code the
+  fee. Send one
   `Idempotency-Key` per purchase **with the quote**; retrying the pay call
   then replays safely.
 

@@ -28,7 +28,7 @@ with the live docs, the docs win; tell the user about the difference.
 | Networks | Test credentials: `base-sepolia` (chain 84532, test USDC, sandbox users only). Live: `base` (chain 8453, real USDC). |
 | Quote lifetime | 10 minutes (`accepts[0].maxTimeoutSeconds`) |
 | Payment | x402 `exact` scheme: an EIP-3009 `TransferWithAuthorization` on the USDC contract in `accepts[0].asset`, for `maxAmountRequired`, to `payTo`, sent base64-encoded in the `X-PAYMENT` header. The payer needs USDC only, no ETH (the facilitator pays gas). |
-| USDC signing domain | `version: "2"`, `chainId` from the network, `verifyingContract: accepts[0].asset`, and `name: "USDC"` on `base-sepolia` but `"USD Coin"` on `base`. INFRA's quote doesn't carry these, so set them yourself even when using an x402 client library. |
+| Token signing domain | `accepts[0].extra` = `{ name, version }` (USDC: `"USD Coin"` on `base`, `"USDC"` on `base-sepolia`, version `"2"`), `chainId` from the network (8453 / 84532), `verifyingContract: accepts[0].asset`. Take it from the quote; fall back to those values only if `extra` is missing. |
 | Idempotency | Send `Idempotency-Key` (any unique string) **with the quote request**. One key per purchase. |
 
 The flow:
@@ -173,7 +173,7 @@ replay, and strict-mode linking.
 
 - [ ] Connect first; quote and pay on the server with Basic auth.
 - [ ] Price shown from the quote; nothing hard-coded.
-- [ ] Signature matches `accepts[0]` with the right USDC domain per network.
+- [ ] Signature matches `accepts[0]`, with the domain from `accepts[0].extra`.
 - [ ] One `Idempotency-Key` per purchase, sent with the quote; pay-call retries are safe.
 - [ ] Strict mode (if used) links the wallet before pricing.
 - [ ] Every error above handled with a plain message.
