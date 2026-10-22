@@ -1,7 +1,7 @@
 {
   "name": "infra",
-  "version": "0.1.0",
-  "description": "Build with INFRA identity: Sign in with INFRA (OAuth 2.0 + PKCE), webhooks and deletion requests, and an integration review.",
+  "version": "0.2.0",
+  "description": "Build with INFRA identity: Sign in with INFRA, INFRA Connect, Pay-As-You-Verify, offline credential checks, verification gating, webhooks and deletion, testing, migrating from a KYC vendor, and an integration review.",
   "author": {
     "name": "INFRA",
     "url": "https://infraidentity.com"
@@ -13,7 +13,11 @@
     "kyc",
     "oauth",
     "pkce",
-    "webhooks"
+    "webhooks",
+    "sd-jwt",
+    "x402",
+    "usdc",
+    "verification"
   ],
   "repository": "https://github.com/infraidentity/infra-skills",
   "license": "MIT"

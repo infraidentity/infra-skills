@@ -39,9 +39,28 @@ https://docs.infraidentity.com/llms-full.txt
   `infra-connect+jwt`, issuer `https://api.infraidentity.com`, audience = the
   client id) against `https://api.infraidentity.com/.well-known/jwks.json`,
   and use the signed copy of the data.
+- On a Pay-As-You-Verify app, Connect returns no data: it comes from the
+  paid PayV call.
 - PayV: sign exactly what INFRA's 402 quote says (amount, asset, network,
-  `payTo`); never hard-code the fee; send an `Idempotency-Key` on the paid
-  retry.
+  `payTo`); never hard-code the fee. USDC signing domain: name `USDC` on
+  `base-sepolia`, `USD Coin` on `base`, version `2`. Send one
+  `Idempotency-Key` per purchase **with the quote**; retrying the pay call
+  then replays safely.
+
+## Claims and gating
+
+- Verify the claims `credential` (SD-JWT, `typ` `dc+sd-jwt`): ES256 via the
+  JWKS by `kid`, `iss`, `aud` = your client id, `environment` = your mode,
+  and every disclosure's SHA-256 digest in `_sd`.
+- Gate on the highest **verified** KYC record; a missing claim means "not
+  verified", never "false". Enforce on the server, explain in the UI, and
+  update on `kyc_*`, `claim_*`, `consent_revoked` and `user_deleted`.
+
+## Testing
+
+- Test credentials only see sandbox users (else `403
+  ENVIRONMENT_MISMATCH`). Test BVN `22222222222` verifies; PayV test
+  payments use Base Sepolia. Unit tests use a fake INFRA, never the real API.
 
 ## Never
 
