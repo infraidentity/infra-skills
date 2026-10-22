@@ -9,9 +9,16 @@ the security rules, and the mistakes to avoid.
 | `infra:sign-in` | Add Sign in with INFRA (OAuth 2.0 + PKCE) and read profile, KYC and claims | "Add Sign in with INFRA to this app" |
 | `infra:webhooks` | Receive INFRA webhooks and deletion callbacks, verified and processed once | "Handle INFRA webhooks and deletion requests" |
 | `infra:review` | Audit an existing INFRA integration and get a ranked report | "Review our INFRA integration before we go live" |
+| `infra:connect` | Add INFRA Connect (one-time code) and verify its signed result | "Let users verify with an INFRA Connect code" |
+| `infra:payv` | Pay per verification in USDC with x402: user-paid, sponsored or strict | "Add Pay-As-You-Verify to our dApp" |
+| `infra:credentials` | Verify INFRA's signed claims offline with its public keys | "Check INFRA claims without calling the API" |
+| `infra:gating` | Turn verification level and claims into tiers, limits and plain messages | "Only verified users over 18 can trade" |
+| `infra:testing` | Sandbox setup, test BVNs and a fake INFRA for automated tests | "Write tests for our INFRA integration" |
+| `infra:migrate` | Move from a KYC provider (Persona, Dojah, Smile ID…) to INFRA | "Replace our KYC vendor with INFRA" |
 
-Frameworks covered with worked code: Express, Next.js (App Router),
-Python (Flask, Django), Laravel. Other stacks get the same steps and rules.
+Sign-in and webhooks have worked code for Express, Next.js (App Router),
+Python (Flask, Django) and Laravel; the other skills give Node and Python
+code where code is needed. Other stacks get the same steps and rules.
 
 ## Install
 
@@ -57,4 +64,5 @@ tell the assistant that the docs win when they disagree.
 
 Published at https://github.com/infraidentity/infra-skills. The source of
 truth is `infra-skills/` in the INFRA monorepo: change it there (with the
-docs), run the check, then copy it to the public repo.
+docs). A GitHub Action in the monorepo runs the check and copies it to the
+public repo on every push to `main`, so don't edit the public repo directly.

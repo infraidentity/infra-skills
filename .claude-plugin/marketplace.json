@@ -1,6 +1,9 @@
 {
   "name": "infra",
-  "owner": { "name": "INFRA", "url": "https://infraidentity.com" },
+  "owner": {
+    "name": "INFRA",
+    "url": "https://infraidentity.com"
+  },
   "metadata": {
     "description": "Skills that teach AI coding assistants to build INFRA integrations correctly."
   },
@@ -8,7 +11,7 @@
     {
       "name": "infra",
       "source": "./plugins/infra",
-      "description": "Add Sign in with INFRA, handle INFRA webhooks and deletion requests, and review an existing INFRA integration.",
+      "description": "Add Sign in with INFRA or INFRA Connect, Pay-As-You-Verify, offline credential checks and verification gating; handle webhooks and deletion; test, migrate and review INFRA integrations.",
       "homepage": "https://docs.infraidentity.com"
     }
   ]

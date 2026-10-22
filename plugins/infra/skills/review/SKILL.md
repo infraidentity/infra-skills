@@ -64,7 +64,9 @@ Uses: <Sign in with INFRA | Connect | PayV | webhooks | deletion callback>
 ```
 
 End with the single most important fix. If the user wants fixes, offer to
-apply them in severity order.
+apply them in severity order, following the matching skill: `infra:sign-in`,
+`infra:connect`, `infra:payv`, `infra:webhooks`, `infra:credentials`,
+`infra:gating`; `infra:testing` for the missing tests.
 
 ## Never
 
