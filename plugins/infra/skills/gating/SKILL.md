@@ -83,7 +83,7 @@ attempt doesn't undo a verified level 1.
 
 ## INFRA can enforce a minimum too
 
-An app's verification policy makes INFRA refuse Connect and PayV for people
+On the Network and Custom plans, an app's verification policy makes INFRA refuse Connect and PayV for people
 below it (minimum identity level, proof of address and its maximum age,
 accepted providers), with error codes such as `IDENTITY_LEVEL_TOO_LOW`,
 `POA_REQUIRED`, `POA_STALE`. That is a floor for sharing at all; tiers above
