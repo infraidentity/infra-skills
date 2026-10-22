@@ -1,0 +1,15 @@
+{
+  "name": "infra",
+  "owner": { "name": "INFRA", "url": "https://infraidentity.com" },
+  "metadata": {
+    "description": "Skills that teach AI coding assistants to build INFRA integrations correctly."
+  },
+  "plugins": [
+    {
+      "name": "infra",
+      "source": "./plugins/infra",
+      "description": "Add Sign in with INFRA, handle INFRA webhooks and deletion requests, and review an existing INFRA integration.",
+      "homepage": "https://docs.infraidentity.com"
+    }
+  ]
+}
