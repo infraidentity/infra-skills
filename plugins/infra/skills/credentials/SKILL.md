@@ -40,6 +40,7 @@ Claim types and `value`:
 |---|---|---|
 | `kyc_verified` | passed KYC with an accredited provider | |
 | `age_over_18` | 18 or older (date of birth never shared) | |
+| `age_over_21` | 21 or older (date of birth never shared) | |
 | `unique_human` | passed duplicate-identity detection | |
 | `country_resident` | verified country of residence | `{ country }` (ISO code) |
 | `address_verified` | proved an address with a recent bill/statement (level 2) | |

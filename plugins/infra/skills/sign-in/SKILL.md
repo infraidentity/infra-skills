@@ -36,7 +36,10 @@ Scopes (ask for the fewest the feature needs; each one is shown to the person on
 | `claims:read` | signed claims: claim_type, provider, proof_hash, expires_at, value | `GET /users/{id}/claims` |
 | `documents:metadata` | document type, country, verification status (never the document) | `GET /users/{id}/documents/metadata` |
 | `wallets:read` | wallets the person linked to INFRA (address, chain_id, linked_at) | `GET /users/{id}/wallets` |
+| `address:match` | checks an address the app already has against the verified one: `match`, `partial`, `no_match` (never the address). 5 checks per person per day. Body: street, town, state, country | `POST /users/{id}/address/match` |
 | `documents:read` | encrypted sensitive data. Trusted apps only; don't add it unless the user says their app is approved for it. | |
+| `address:read` | the full verified address, encrypted to the app's key. Trusted apps approved for "Verified home address" only. | `GET /users/{id}/address` |
+| `dob:read` | the verified date of birth, encrypted to the app's key. Trusted apps approved for "Date of birth" only; for an age check use claims `age_over_18` / `age_over_21`. | `GET /users/{id}/date-of-birth` |
 | `offline_access` | a **refresh token** (30 days, rotates). Not shown to the person. Add it unless the app only needs data once at sign-in. | |
 | `openid` | an `id_token` (`sub` = the app's id for the person; `preferred_username` with `profile:read`). Not shown to the person. | |
 
