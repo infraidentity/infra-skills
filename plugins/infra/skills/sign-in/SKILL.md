@@ -37,6 +37,7 @@ Scopes (ask for the fewest the feature needs; each one is shown to the person on
 | `documents:metadata` | document type, country, verification status (never the document) | `GET /users/{id}/documents/metadata` |
 | `wallets:read` | wallets the person linked to INFRA (address, chain_id, linked_at) | `GET /users/{id}/wallets` |
 | `phone:read` | phone number and `phone_verified` (true when INFRA confirmed it) | `GET /users/{id}/phone` |
+| `phone:match` | checks a number the app already has: `match`, `no_match`, `no_phone_number` (never the number). 5 checks per person per day. Body: `phone_number` | `POST /users/{id}/phone/match` |
 | `address:match` | checks an address the app already has against the verified one: `match`, `partial`, `no_match` (never the address). 5 checks per person per day. Body: street, town, state, country | `POST /users/{id}/address/match` |
 | `documents:read` | encrypted sensitive data. Trusted apps only; don't add it unless the user says their app is approved for it. | |
 | `address:read` | the full verified address, encrypted to the app's key. Trusted apps approved for "Verified home address" only. | `GET /users/{id}/address` |
