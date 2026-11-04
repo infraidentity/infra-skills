@@ -17,7 +17,7 @@ https://docs.infraidentity.com/llms-full.txt
   the person (other apps get a different one). Key accounts on it; never on
   email, and never merge existing accounts by email.
 - Ask for the fewest scopes: `profile:read`, `kyc:read`, `claims:read`,
-  `documents:metadata`, `wallets:read`.
+  `documents:metadata`, `wallets:read`, `phone:read`.
 - Add `offline_access` to get a refresh token (30 days, rotates; store the
   new one each time). If refresh fails, or there is none, sign the person
   in again. `openid` adds an `id_token`.

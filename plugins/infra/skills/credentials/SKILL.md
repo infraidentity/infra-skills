@@ -46,6 +46,7 @@ Claim types and `value`:
 | `address_verified` | proved an address with a recent bill/statement (level 2) | |
 | `state_resident` | verified state or region | `{ country, state }` |
 | `postal_region` | first 3 characters of the postcode | `{ postal_region }` |
+| `phone_verified` | has a phone number INFRA confirmed (number never shared) | |
 
 Each claim also has its own `expires_at` (for `address_verified`, the
 recommended refresh date). A claim present in the credential is verified;
