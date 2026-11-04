@@ -127,7 +127,7 @@ hold is already deleted, so acknowledge it.
 - Re-serialising the parsed JSON and signing that is a bug; tests should
   sign the exact bytes they send.
 - End to end: use a sandbox user with the app's test credentials; approving,
-  verifying (test BVN `22222222222`) and revoking in
+  verifying (test ID number `22222222222`) and revoking in
   https://accounts.infraidentity.com produce real `test` events. Expose
   localhost with a tunnel (e.g. `cloudflared tunnel --url
   http://localhost:3000`) and register that HTTPS URL.

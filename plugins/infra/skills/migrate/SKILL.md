@@ -27,7 +27,7 @@ Find and list:
   checks, limits, age checks, country checks, address checks, manual review
   queues).
 - **Stored data:** columns and buckets holding ID images, selfies, ID numbers
-  (BVN, NIN, passport), dates of birth, addresses, raw provider JSON,
+  (NIN, passport, other national IDs), dates of birth, addresses, raw provider JSON,
   provider applicant/inquiry ids.
 - **Things INFRA doesn't provide to apps** (flag these to the user before
   promising anything): AML/sanctions/PEP results, risk scores, document
@@ -47,7 +47,7 @@ delete.
 | nationality / country | `profile.country`, claim `country_resident` |
 | duplicate / "same person" checks | claim `unique_human` |
 | name, email | `profile:read` (sign-in) or `profile:basic` (Connect) |
-| ID numbers (BVN, NIN, passport) | only for **trusted** apps (`documents:read`, encrypted to the app's key). If the app truly needs them, it must apply for trusted status; otherwise stop collecting them. |
+| ID numbers (NIN, passport, other national IDs) | only for **trusted** apps (`documents:read`, encrypted to the app's key). If the app truly needs them, it must apply for trusted status; otherwise stop collecting them. |
 | provider webhook "status changed" | INFRA webhooks `kyc_verified`, `kyc_rejected`, `kyc_status_updated`, `claim_revoked` |
 | "re-verify every N days" | the app's verification policy (`poa_freshness_days`, `require_fresh_verification`) or a check on `verified_at` |
 

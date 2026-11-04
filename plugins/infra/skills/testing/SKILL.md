@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Test an INFRA integration - INFRA's sandbox (test credentials, sandbox users, test BVNs, Base Sepolia for PayV, ENVIRONMENT_MISMATCH rules) and automated tests with a fake INFRA (one client module, stubbed responses in INFRA's real shapes, signed webhook and credential fixtures). Use when the user asks to test INFRA sign-in, Connect, PayV or webhooks, set up INFRA sandbox or test users, write unit/integration tests for INFRA code, mock INFRA, or get test BVNs.
+description: Test an INFRA integration - INFRA's sandbox (test credentials, test users, test ID numbers, event simulations, the data deletion test, Base Sepolia for PayV, ENVIRONMENT_MISMATCH rules) and automated tests with a fake INFRA (one client module, stubbed responses in INFRA's real shapes, signed webhook and credential fixtures). Use when the user asks to test INFRA sign-in, Connect, PayV or webhooks, set up INFRA sandbox or test users, write unit/integration tests for INFRA code, mock INFRA, or get test ID numbers.
 ---
 
 # Testing an INFRA integration
@@ -20,19 +20,21 @@ with the live docs, the docs win; tell the user about the difference.
 
 | What | How |
 |---|---|
-| Test credentials | Developer portal (https://developers.infraidentity.com) → app → Sandbox panel (flask icon). Test client id starts with `test_`; "Get a new test secret" shows it once. |
-| Sandbox users | Same panel → Create test user → email (`sandbox-…@test.infra.local`) and password, shown once. |
-| Verify a sandbox user | Sign in as them at https://accounts.infraidentity.com; verification asks for a test BVN. |
+| Test credentials | Developer portal (https://developers.infraidentity.com) → app → Test. Test client id starts with `infra_test_`, secrets with `infra_sk_test_`; a new secret is shown once. New apps get test credentials only. |
+| Test users | Same page → Test users → create one → email (`sandbox-…@test.infra.local`) and password, shown once. Each gets a made-up name and phone number. |
+| Verify a test user | Sign in as them at https://accounts.infraidentity.com; verification asks for a test ID number. The address check then passes at once with a made-up address. |
+| Events | Next to each test user, send any event (ID rejected, ID expiring soon, ID expired, address no longer verified, person removed the app…) to the test webhook. Payloads carry `"simulated": true`; the test user doesn't change. |
+| Going live | Pass the data deletion test (INFRA sends a deletion for a test user to the deletion callback URL; the app confirms it), then generate live keys (password + emailed code). |
 | PayV | Test credentials settle on Base Sepolia with test USDC: https://faucet.circle.com (network Base Sepolia). |
 
-Test BVNs:
+Test ID numbers:
 
-| BVN | Result |
+| ID number | Result |
 |---|---|
-| `22222222222` | Verified ("Ada Sandbox") |
+| `22222222222` | Verified (with the test user's made-up identity) |
 | `11111111111` | Rejected: name mismatch |
 | `33333333333` | Rejected: not found (any other number too) |
-| `00000000000` | Provider unavailable, for retry handling |
+| `00000000000` | Service unavailable, for retry handling |
 
 Rules:
 
@@ -139,7 +141,7 @@ real webhook delivery to a tunnelled local URL (e.g. `cloudflared tunnel
 
 - Call the real INFRA from unit tests or CI.
 - Commit test secrets, sandbox passwords or webhook secrets; generate them in the test.
-- Use sandbox users or test BVNs with live credentials, or real people's data in tests.
+- Use test users or test ID numbers with live credentials, or real people's data in tests.
 - Skip error-path tests because the happy path passed in the sandbox.
 
 ## Done when

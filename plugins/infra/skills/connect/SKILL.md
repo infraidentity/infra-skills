@@ -169,8 +169,8 @@ posted body exactly as above before trusting anything in it.
 
 ## Testing
 
-Use the app's test credentials (developer portal → app → Sandbox) and a
-sandbox user created there; verify the sandbox user with test BVN
+Use the app's test credentials (developer portal → app → Test) and a
+test user created there; verify the test user with test ID number
 `22222222222`, then create a Connect code as that user at
 https://accounts.infraidentity.com. Unit-test against a stubbed INFRA
 (the `infra:testing` skill): success, invalid code, a policy failure, a

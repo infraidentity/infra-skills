@@ -59,7 +59,7 @@ https://docs.infraidentity.com/llms-full.txt
 ## Testing
 
 - Test credentials only see sandbox users (else `403
-  ENVIRONMENT_MISMATCH`). Test BVN `22222222222` verifies; PayV test
+  ENVIRONMENT_MISMATCH`). Test ID number `22222222222` verifies; PayV test
   payments use Base Sepolia. Unit tests use a fake INFRA, never the real API.
 
 ## Never

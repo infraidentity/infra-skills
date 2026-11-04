@@ -151,8 +151,8 @@ it's refused before anything is charged.
 
 ## Testing
 
-Test credentials + a sandbox user (developer portal → app → Sandbox), verified
-with test BVN `22222222222`. Payments settle on Base Sepolia: get test USDC
+Test credentials + a test user (developer portal → app → Test), verified
+with test ID number `22222222222`. Payments settle on Base Sepolia: get test USDC
 for the paying wallet at https://faucet.circle.com (network Base Sepolia).
 Unit-test against a stubbed INFRA (`infra:testing`): quote → pay → data,
 expired quote, `PAYER_MISMATCH`, a timeout on the pay call followed by a

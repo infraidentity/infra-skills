@@ -139,9 +139,9 @@ Attach only while the person is signed in to the existing account (a
 ## Testing
 
 Every app has live and test credentials. Use the test client id/secret
-(developer portal → app → Sandbox) with a sandbox user created there. Sign
-in as the sandbox user at https://accounts.infraidentity.com and verify with
-test BVN `22222222222`. Write unit tests with a fake INFRA (stub the three
+(developer portal → app → Test) with a test user created there. Sign
+in as the test user at https://accounts.infraidentity.com and verify with
+test ID number `22222222222`. Write unit tests with a fake INFRA (stub the three
 HTTP calls) that cover: wrong `state`, `access_denied`, token failure, and a
 successful sign-in creating exactly one local user per INFRA `userId`.
 
