@@ -114,6 +114,9 @@ So:
    app gates anything on KYC or claims, also set up webhooks (the
    `infra:webhooks` skill) so `kyc_verified`, `consent_revoked`,
    `user_deleted` and the rest update or remove your copy.
+   A person whose identity check is still in review can sign in: their KYC
+   status is `pending`, and `kyc_verified` arrives once it's decided. Gate
+   anything that needs a verified person on the status, not on sign-in.
 
 ## Errors to handle by code
 
