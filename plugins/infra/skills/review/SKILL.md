@@ -15,7 +15,7 @@ Search the codebase (skip `node_modules`, `vendor`, build output):
 
 - Hosts: `infraidentity.com`, `oauth2/auth`, `oauth2/token`, `/api/v1/`
 - Env names: `INFRA_`, `CLIENT_SECRET`, `WEBHOOK_SECRET`
-- Headers: `X-Webhook-Signature`, `X-Deletion-Signature`, `X-PAYMENT`
+- Headers: `X-Webhook-Signature`, `X-Deletion-Signature`, `PAYMENT-SIGNATURE` (x402 version 2; `X-PAYMENT` is refused)
 - Features: `connect/request`, `signed_result`, `payv/verification`,
   `claims/verify`, `deletion/acknowledge`, `jwks.json`
 - Event names: `consent_revoked`, `kyc_verified`, `claim_issued`,

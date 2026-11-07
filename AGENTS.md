@@ -41,9 +41,10 @@ https://docs.infraidentity.com/llms-full.txt
   and use the signed copy of the data.
 - On a Pay-As-You-Verify app, Connect returns no data: it comes from the
   paid PayV call.
-- PayV: sign exactly what INFRA's 402 quote says (amount, asset, network,
-  `payTo`, and the token domain in `accepts[0].extra`); never hard-code the
-  fee. Send one
+- PayV uses x402 version 2: sign exactly what INFRA's 402 quote says
+  (`accepts[0]`: amount, asset, network `eip155:…`, `payTo`, and the token
+  domain in `extra`); never hard-code the fee. Send the version 2 payment
+  (echoing `resource` and `extensions`) base64 in `PAYMENT-SIGNATURE`. Send one
   `Idempotency-Key` per purchase **with the quote**; retrying the pay call
   then replays safely.
 

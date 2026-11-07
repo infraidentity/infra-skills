@@ -1,6 +1,6 @@
 ---
 name: payv
-description: Build INFRA Pay-As-You-Verify (PayV) - paying a small USDC fee on Base, per verification, to reuse a person's existing INFRA verification through the x402 protocol (402 quote, sign an EIP-3009 transfer, retry with X-PAYMENT). Covers the person paying from their own wallet in a dApp, the app sponsoring the fee from a server wallet, strict payer mode with wallet linking, idempotent retries, and testing on Base Sepolia. Use when the user mentions INFRA PayV, Pay-As-You-Verify, paying per verification, x402 with INFRA, USDC verification fees, or a 402 from /payv/verification.
+description: Build INFRA Pay-As-You-Verify (PayV) - paying a small USDC fee on Base, per verification, to reuse a person's existing INFRA verification through the x402 protocol, version 2 (402 quote, sign an EIP-3009 transfer, retry with PAYMENT-SIGNATURE). Covers the person paying from their own wallet in a dApp, the app sponsoring the fee from a server wallet, strict payer mode with wallet linking, idempotent retries, and testing on Base Sepolia. Use when the user mentions INFRA PayV, Pay-As-You-Verify, paying per verification, x402 with INFRA, USDC verification fees, or a 402 from /payv/verification.
 ---
 
 # INFRA Pay-As-You-Verify (PayV)
@@ -25,22 +25,24 @@ with the live docs, the docs win; tell the user about the difference.
 | Scopes | `profile:basic`, `kyc:status` (Connect's names) |
 | Billing model | The app must be switched to PayV: developer portal → app → Settings → Billing model → Pay-As-You-Verify. An app is on a plan **or** PayV, never both. |
 | Fee, token, network | Whatever the quote says (`amount_display`, `asset_symbol`, `accepts[0]`). **Never hard-code them.** |
-| Networks | Test credentials: `base-sepolia` (chain 84532, test USDC, sandbox users only). Live: `base` (chain 8453, real USDC). |
+| Protocol | **x402 version 2** only. The quote's PaymentRequired is in the `PAYMENT-REQUIRED` header (base64) and the body; you pay with a version 2 PaymentPayload, base64, in the `PAYMENT-SIGNATURE` header. Version 1 (`X-PAYMENT`) gets `400 X402_VERSION_UNSUPPORTED`. |
+| Networks | CAIP-2 ids. Test credentials: `eip155:84532` (Base Sepolia, test USDC, sandbox users only). Live: `eip155:8453` (Base, real USDC). |
 | Quote lifetime | 10 minutes (`accepts[0].maxTimeoutSeconds`) |
-| Payment | x402 `exact` scheme: an EIP-3009 `TransferWithAuthorization` on the USDC contract in `accepts[0].asset`, for `maxAmountRequired`, to `payTo`, sent base64-encoded in the `X-PAYMENT` header. The payer needs USDC only, no ETH (the facilitator pays gas). |
-| Token signing domain | `accepts[0].extra` = `{ name, version }` (USDC: `"USD Coin"` on `base`, `"USDC"` on `base-sepolia`, version `"2"`), `chainId` from the network (8453 / 84532), `verifyingContract: accepts[0].asset`. Take it from the quote; fall back to those values only if `extra` is missing. |
+| Payment | x402 `exact` scheme: an EIP-3009 `TransferWithAuthorization` on the USDC contract in `accepts[0].asset`, for `accepts[0].amount`, to `payTo`. Wrapped as `{ x402Version: 2, resource, accepted: accepts[0], payload: { signature, authorization }, extensions }` (echo the quote's `resource` and `extensions`), base64, in `PAYMENT-SIGNATURE`. The payer needs USDC only, no ETH (the facilitator pays gas). |
+| Extensions | Echo `extensions` from the quote unchanged. It carries INFRA's Base builder code (`builder-code`), which credits the payment to INFRA on Base. Costs nothing, signs nothing extra. |
+| Token signing domain | `accepts[0].extra` = `{ name, version }` (USDC: `"USD Coin"` on Base, `"USDC"` on Base Sepolia, version `"2"`), `chainId` from the network (`eip155:8453` → 8453), `verifyingContract: accepts[0].asset`. Take it from the quote; fall back to those values only if `extra` is missing. |
 | Idempotency | Send `Idempotency-Key` (any unique string) **with the quote request**. One key per purchase. |
 
 The flow:
 
 1. **Consent:** redeem the person's Connect code (`infra:connect` skill). On a
    PayV app Connect returns `user_id` but no data.
-2. **Quote:** POST without payment → `402` with `payment_request_id` and
-   `accepts[0]`. INFRA checks consent, verification and your policy first, so
+2. **Quote:** POST without payment → `402` with `payment_request_id`,
+   `accepts[0]`, `resource` and `extensions`. INFRA checks consent, verification and your policy first, so
    a 402 means "pay and you'll get the data".
 3. **Sign:** the payer's wallet signs exactly `accepts[0]`.
-4. **Pay:** POST again with `payment_request_id` and `X-PAYMENT` → `200` with
-   the data and `tx_hash`.
+4. **Pay:** POST again with `payment_request_id` and `PAYMENT-SIGNATURE` →
+   `200` with the data and `tx_hash` (and `PAYMENT-RESPONSE`, base64).
 
 ```json
 {
@@ -78,19 +80,21 @@ status, `expires_at`, `tx_hash` and `failure_reason`.
    `Idempotency-Key`, and `payer_address` whenever you know the paying
    wallet (recommended in every mode: the quote is then bound to it). Expect
    `402` with `error.code = PAYMENT_REQUIRED`. Store `payment_request_id`,
-   `accepts[0]`, the key and the payer against the purchase.
+   `accepts[0]`, `resource`, `extensions`, the key and the payer against the
+   purchase.
 3. **Show the price** from `amount_display` + `asset_symbol` when the person
    pays. Don't round or convert it into a different promise.
-4. **Sign** exactly `accepts[0]`: `to = payTo`, `value = maxAmountRequired`,
+4. **Sign** exactly `accepts[0]`: `to = payTo`, `value = amount`,
    `validAfter` a little in the past, `validBefore = now +
    maxTimeoutSeconds`, a random 32-byte `nonce`, `from` = the payer.
    - Person pays: the browser wallet signs typed data
      (`eth_signTypedData_v4`) and sends `{ authorization, signature }` to
      your server.
    - Sponsored: your server signs with the sponsor key.
-5. **Pay (server):** build `X-PAYMENT` = base64 of
-   `{ x402Version: 1, scheme: "exact", network: accepts[0].network, payload: { signature, authorization } }`
-   and POST with the same `infra_user_id`, `scopes` and `payment_request_id`.
+5. **Pay (server):** build `PAYMENT-SIGNATURE` = base64 of
+   `{ x402Version: 2, resource, accepted: accepts[0], payload: { signature, authorization }, extensions }`
+   (`resource` and `extensions` exactly as quoted) and POST with the same
+   `infra_user_id`, `scopes` and `payment_request_id`.
    Before sending a browser-signed payment, check its `to`, `value` and
    `from` match the stored quote.
 6. **Use the data** from the 200, keyed by `infra_user_id`. Keep `tx_hash`

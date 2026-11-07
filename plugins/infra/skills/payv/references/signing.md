@@ -1,27 +1,40 @@
 # Signing a PayV payment
 
-INFRA's quote (`402`) carries the x402 payment requirements in `accepts[0]`:
+INFRA uses **x402 version 2**. Its quote (`402`) carries the payment
+requirements in `accepts[0]`, plus `resource` and `extensions` (also in the
+`PAYMENT-REQUIRED` header, base64):
 
 ```json
 {
-  "scheme": "exact", "network": "base-sepolia", "maxAmountRequired": "950000",
-  "payTo": "0x…", "asset": "0x…", "maxTimeoutSeconds": 600,
-  "resource": "/api/v1/payv/verification", "description": "INFRA verification reuse fee",
-  "mimeType": "application/json",
-  "extra": { "name": "USDC", "version": "2" }
+  "x402Version": 2,
+  "resource": { "url": "https://api.infraidentity.com/api/v1/payv/verification", "description": "INFRA verification reuse fee", "mimeType": "application/json" },
+  "accepts": [{
+    "scheme": "exact", "network": "eip155:84532", "amount": "950000",
+    "asset": "0x…", "payTo": "0x…", "maxTimeoutSeconds": 600,
+    "extra": { "name": "USDC", "version": "2" }
+  }],
+  "extensions": { "builder-code": { "info": { "a": "…" }, "schema": { "…": "…" } } }
 }
 ```
 
-The payer signs an EIP-3009 `TransferWithAuthorization` for exactly that, and
-your server sends it as `X-PAYMENT`. Shared pieces (any language):
+The payer signs an EIP-3009 `TransferWithAuthorization` for exactly
+`accepts[0]`, and your server sends the version 2 payment, base64, in the
+`PAYMENT-SIGNATURE` header. Echo `resource` and `extensions` unchanged: the
+`builder-code` extension credits the payment to INFRA on Base. Shared pieces
+(any language):
 
 ```js
 // The token's EIP-712 domain comes in the quote (accepts[0].extra). These are
 // Circle USDC's values, only used if extra is missing.
-const CHAIN_ID = { base: 8453, 'base-sepolia': 84532 };
+// x402 version 2 networks are CAIP-2 ids: eip155:<chain id>.
 const USDC_DOMAIN = {
-  'base-sepolia': { name: 'USDC', version: '2' },
-  base: { name: 'USD Coin', version: '2' },
+  84532: { name: 'USDC', version: '2' },     // Base Sepolia
+  8453: { name: 'USD Coin', version: '2' },  // Base
+};
+const chainIdOf = (network) => {
+  const m = /^eip155:(\d+)$/.exec(network || '');
+  if (!m) throw new Error(`Unsupported network ${network}`);
+  return Number(m[1]);
 };
 
 const TYPES = {
@@ -33,20 +46,19 @@ const TYPES = {
 };
 
 function typedDataFor(req, from, nonce) {
-  const chainId = CHAIN_ID[req.network];
-  if (!chainId) throw new Error(`Unsupported network ${req.network}`);
-  const { name, version } = req.extra?.name && req.extra?.version ? req.extra : USDC_DOMAIN[req.network];
+  const chainId = chainIdOf(req.network);
+  const { name, version } = req.extra?.name && req.extra?.version ? req.extra : USDC_DOMAIN[chainId];
   const now = Math.floor(Date.now() / 1000);
   const authorization = {
     from,
     to: req.payTo,
-    value: req.maxAmountRequired,
+    value: req.amount,
     validAfter: String(now - 60),
     validBefore: String(now + req.maxTimeoutSeconds),
     nonce, // "0x" + 32 random bytes as hex
   };
   return {
-    authorization, // what goes into X-PAYMENT, as strings
+    authorization, // what goes into the payment, as strings
     typedData: {
       domain: { name, version, chainId, verifyingContract: req.asset },
       types: TYPES,
@@ -57,10 +69,14 @@ function typedDataFor(req, from, nonce) {
   };
 }
 
-function xPaymentHeader(req, authorization, signature) {
+// quote = the 402 body (accepts, resource, extensions). Echo it as quoted.
+function paymentSignatureHeader(quote, authorization, signature) {
   return Buffer.from(JSON.stringify({
-    x402Version: 1, scheme: 'exact', network: req.network,
+    x402Version: 2,
+    resource: quote.resource,
+    accepted: quote.accepts[0],
     payload: { signature, authorization },
+    ...(quote.extensions ? { extensions: quote.extensions } : {}),
   })).toString('base64');
 }
 ```
@@ -97,7 +113,7 @@ export async function verifyWithSponsor(infraUserId, scopes = ['kyc:status']) {
   const signature = await sponsor.signTypedData(typedData);
 
   const paid = await payv({ ...base, payment_request_id: quote.body.payment_request_id },
-    { 'X-PAYMENT': xPaymentHeader(req, authorization, signature) });
+    { 'PAYMENT-SIGNATURE': paymentSignatureHeader(quote.body, authorization, signature) });
   if (paid.status !== 200) throw Object.assign(new Error(paid.body.error?.message), { code: paid.body.error?.code });
   return paid.body.data; // profile, kyc, tx_hash
 }
@@ -109,15 +125,17 @@ Split across browser and server; the client secret stays on the server.
 
 1. Browser → your server: "verify me", with the connected wallet address.
 2. Server: quote with `payer_address` = that address and a new
-   `Idempotency-Key`; store the quote; return `{ payment_request_id,
-   accepts[0], amount_display, asset_symbol }`.
+   `Idempotency-Key`; store the quote (`accepts[0]`, `resource`,
+   `extensions`); return `{ payment_request_id, accepts[0], amount_display,
+   asset_symbol }`.
 3. Browser: show "Pay 0.95 USDC to reuse your INFRA verification" from the
    quote, build the typed data with `typedDataFor(req, address, nonce)` and
    ask the wallet to sign it.
 4. Browser → server: `{ payment_request_id, authorization, signature }`.
 5. Server: load the stored quote; check `authorization.to === payTo`,
-   `authorization.value === maxAmountRequired`, `authorization.from` equals
-   the quoted `payer_address` (case-insensitive); then send `X-PAYMENT`.
+   `authorization.value === amount`, `authorization.from` equals the quoted
+   `payer_address` (case-insensitive); then build the payment from the stored
+   quote with `paymentSignatureHeader` and send it in `PAYMENT-SIGNATURE`.
 
 Browser signing with viem (wagmi's `signTypedData` takes the same object):
 
@@ -143,7 +161,8 @@ derives the primary type, so pass `types` without `EIP712Domain`).
 
 ## Using an x402 client library
 
-Coinbase's x402 libraries work with `accepts[0]` as it is (they read the
-token's domain from `extra`). Send their result as `X-PAYMENT` together with
-`payment_request_id` in the JSON body: a library's automatic retry won't add
-it for you.
+Coinbase's x402 version 2 libraries work with INFRA's quote as it is (they
+read the token's domain from `extra` and echo `extensions`). Send their result
+in `PAYMENT-SIGNATURE` together with `payment_request_id` in the JSON body: a
+library's automatic retry won't add it for you. Version 1 libraries won't
+work: INFRA refuses `X-PAYMENT`.
