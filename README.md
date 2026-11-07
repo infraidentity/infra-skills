@@ -12,7 +12,7 @@ the security rules, and the mistakes to avoid.
 | `infra:connect` | Add INFRA Connect (one-time code) and verify its signed result | "Let users verify with an INFRA Connect code" |
 | `infra:payv` | Pay per verification in USDC with x402: user-paid, sponsored or strict | "Add Pay-As-You-Verify to our dApp" |
 | `infra:credentials` | Verify INFRA's signed claims offline with its public keys | "Check INFRA claims without calling the API" |
-| `infra:proofs` | (Beta) Prove over 18 / verified / country without receiving the data | "Add an age gate that never sees birthdays" |
+| `infra:proofs` | (Beta) Prove over 18 or 21, verified, one real person, country or state without receiving the data | "Add an age gate that never sees birthdays" |
 | `infra:gating` | Turn verification level and claims into tiers, limits and plain messages | "Only verified users over 18 can trade" |
 | `infra:testing` | Sandbox setup, test users, test ID numbers and a fake INFRA for automated tests | "Write tests for our INFRA integration" |
 | `infra:migrate` | Move from a KYC provider (Persona, Dojah, Smile ID…) to INFRA | "Replace our KYC vendor with INFRA" |

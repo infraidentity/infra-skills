@@ -1,6 +1,6 @@
 ---
 name: proofs
-description: Use INFRA's zero-knowledge proofs (beta) - prove facts about a person (age_over_18, kyc_verified, resident_country) without receiving the data behind them, bound to the app's client id and a one-use challenge. Covers POST /zk/challenges, /zk/proofs and /zk/verify, the issuer key at GET /zk/issuer-key, checking proofs independently with Google Longfellow, and choosing between proofs and signed claims (SD-JWT). Use when the user asks for zero-knowledge proofs, an age gate without collecting birthdays, proving verification without sharing data, or minimum-disclosure identity checks with INFRA.
+description: Use INFRA's zero-knowledge proofs (beta) - prove facts about a person (over 18 or 21, verified, one real person, phone or address confirmed, safety check, country, state, postal area) without receiving the data behind them, bound to the app's client id and a one-use challenge. Each fact has its own permission, proof:<fact>. Covers POST /zk/challenges, /zk/proofs and /zk/verify, the issuer key at GET /zk/issuer-key, checking proofs independently with Google Longfellow, and choosing between proofs and signed claims (SD-JWT). Use when the user asks for zero-knowledge proofs, an age gate without collecting birthdays, proving verification without sharing data, or minimum-disclosure identity checks with INFRA.
 ---
 
 # INFRA proofs (beta)
@@ -31,9 +31,12 @@ the live docs, the docs win; tell the user about the difference.
 
 | What | Value |
 |---|---|
-| Facts | `age_over_18` (true), `kyc_verified` (true), `resident_country` (two-letter code, e.g. "NG"). 1 to 4 per proof, each once. |
-| Step 1 | `POST /api/v1/zk/challenges`, **Bearer** person's token with `claims:read`, body `{"user_id"}` → `{challenge_id, challenge, expires_at}`. 5 minutes, one use. **Keep `challenge`.** |
-| Step 2 | `POST /api/v1/zk/proofs`, same Bearer token, body `{"user_id", "challenge_id", "facts": [...]}` → `{proof, doc_type, namespace, facts, now, challenge_id}`. ~1 s. Uses up the challenge. |
+| Facts (yes) | `age_over_18`, `age_over_21`, `kyc_verified`, `unique_human`, `phone_verified`, `address_verified`, `watchlist_clear`: always `true` (a missing fact is refused, never `false`) |
+| Facts (value) | `resident_country` (two-letter code, e.g. "NG"), `resident_state` (state name, e.g. "Lagos", up to 28 bytes), `postal_region` (first part of the postcode) |
+| Per proof | 1 to 4 facts, each once |
+| Permissions | One per fact: `proof:<fact>` (e.g. `proof:age_over_18`). Add them to the app in the developer portal and request them at sign-in. `claims:read` is **not** needed. The person sees each one on the consent screen, and each proof goes in their access history (facts, never values). |
+| Step 1 | `POST /api/v1/zk/challenges`, **Bearer** person's token with at least one `proof:<fact>`, body `{"user_id"}` → `{challenge_id, challenge, expires_at}`. 5 minutes, one use. **Keep `challenge`.** |
+| Step 2 | `POST /api/v1/zk/proofs`, same Bearer token (with `proof:<fact>` for **every** fact asked), body `{"user_id", "challenge_id", "facts": [...]}` → `{proof, doc_type, namespace, facts, now, challenge_id}`. ~1 s. Uses up the challenge. |
 | Step 3 | `POST /api/v1/zk/verify`, **HTTP Basic `client_id:client_secret`** (never in the body), body `{"challenge", "facts", "now", "proof", "doc_type"}` → `{valid, reason}` |
 | Binding | The proof is bound to the app's **client id** and **its challenge**. Test and live client ids differ, so a test proof never passes a live check. |
 | Time | `now` must be within 2 minutes of the check: verify straight away. |
@@ -72,6 +75,7 @@ if (check.success && check.data.valid) { /* over 18, for this session */ }
 | `CHALLENGE_INVALID` | 400 | Unknown, used, expired, or another app's/person's challenge: get a new one |
 | `INVALID_FACTS` | 400 | Unknown fact, repeated fact, >4 facts, or a value of the wrong kind |
 | `USER_MISMATCH` | 403 | `user_id` isn't the token's person |
+| `INSUFFICIENT_SCOPE` | 403 | The person didn't grant a `proof:<fact>` you asked for (`required_scopes` lists them). Ask at sign-in; the challenge is kept |
 | `FACT_NOT_AVAILABLE` | 422 | INFRA hasn't confirmed that fact for this person (ask them to verify) |
 | `PROOF_FAILED` | 422 | Retry once; report if it repeats |
 | `ZK_PROVER_UNAVAILABLE` | 503 | Retry with backoff |
@@ -89,6 +93,7 @@ advanced; `/zk/verify` is the simple path.
 
 ## Don't
 
+- Don't ask for `claims:read` just to make proofs: ask for the `proof:<fact>` permissions you need, and only those.
 - Don't trust `facts` from the proof response without step 3 (or your own verifier).
 - Don't reuse a challenge, or check a proof with a challenge other than the one you were given.
 - Don't put the client secret in a request body or in browser code.

@@ -53,8 +53,10 @@ https://docs.infraidentity.com/llms-full.txt
   JWKS by `kid`, `iss`, `aud` = your client id, `environment` = your mode,
   and every disclosure's SHA-256 digest in `_sd`.
 - Proofs (beta): when you only need a yes/no answer (age_over_18,
-  kyc_verified, resident_country), use `/zk/challenges` → `/zk/proofs` →
-  `/zk/verify` on the backend. Check with HTTP Basic and **your own**
+  age_over_21, kyc_verified, unique_human, phone_verified, address_verified,
+  watchlist_clear, resident_country, resident_state, postal_region), use
+  `/zk/challenges` → `/zk/proofs` → `/zk/verify` on the backend. Each fact
+  needs its own permission `proof:<fact>` (not `claims:read`). Check with HTTP Basic and **your own**
   challenge; a proof (~350 KB) is bound to your client id and that challenge.
 - Gate on the highest **verified** KYC record; a missing claim means "not
   verified", never "false". Enforce on the server, explain in the UI, and

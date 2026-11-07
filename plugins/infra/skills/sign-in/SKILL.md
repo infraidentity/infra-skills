@@ -39,6 +39,7 @@ Scopes (ask for the fewest the feature needs; each one is shown to the person on
 | `phone:read` | phone number and `phone_verified` (true when INFRA confirmed it) | `GET /users/{id}/phone` |
 | `phone:match` | checks a number the app already has: `match`, `no_match`, `no_phone_number` (never the number). 5 checks per person per day. Body: `phone_number` | `POST /users/{id}/phone/match` |
 | `address:match` | checks an address the app already has against the verified one: `match`, `partial`, `no_match` (never the address). 5 checks per person per day. Body: street, town, state, country | `POST /users/{id}/address/match` |
+| `proof:<fact>` | (beta) prove one fact without the data, e.g. `proof:age_over_18`. One permission per fact; see the `proofs` skill | `POST /zk/proofs` |
 | `documents:read` | encrypted sensitive data. Trusted apps only; don't add it unless the user says their app is approved for it. | |
 | `address:read` | the full verified address, encrypted to the app's key. Trusted apps approved for "Verified home address" only. | `GET /users/{id}/address` |
 | `dob:read` | the verified date of birth, encrypted to the app's key. Trusted apps approved for "Date of birth" only; for an age check use claims `age_over_18` / `age_over_21`. | `GET /users/{id}/date-of-birth` |
