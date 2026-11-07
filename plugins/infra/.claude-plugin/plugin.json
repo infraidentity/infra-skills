@@ -1,7 +1,7 @@
 {
   "name": "infra",
   "version": "0.2.0",
-  "description": "Build with INFRA identity: Sign in with INFRA, INFRA Connect, Pay-As-You-Verify, offline credential checks, verification gating, webhooks and deletion, testing, migrating from a KYC vendor, and an integration review.",
+  "description": "Build with INFRA identity: Sign in with INFRA, INFRA Connect, Pay-As-You-Verify, offline credential checks, proofs (beta), verification gating, webhooks and deletion, testing, migrating from a KYC vendor, and an integration review.",
   "author": {
     "name": "INFRA",
     "url": "https://infraidentity.com"

@@ -52,6 +52,10 @@ https://docs.infraidentity.com/llms-full.txt
 - Verify the claims `credential` (SD-JWT, `typ` `dc+sd-jwt`): ES256 via the
   JWKS by `kid`, `iss`, `aud` = your client id, `environment` = your mode,
   and every disclosure's SHA-256 digest in `_sd`.
+- Proofs (beta): when you only need a yes/no answer (age_over_18,
+  kyc_verified, resident_country), use `/zk/challenges` → `/zk/proofs` →
+  `/zk/verify` on the backend. Check with HTTP Basic and **your own**
+  challenge; a proof (~350 KB) is bound to your client id and that challenge.
 - Gate on the highest **verified** KYC record; a missing claim means "not
   verified", never "false". Enforce on the server, explain in the UI, and
   update on `kyc_*`, `claim_*`, `consent_revoked` and `user_deleted`.
