@@ -74,8 +74,8 @@ export function fakeInfra(overrides = {}) {
   const user = {
     id: '11111111-2222-3333-4444-555555555555',      // the app's own id for the person
     profile: { email: 'ada@example.com', first_name: 'Ada', last_name: 'Sandbox', country: 'NG', username: 'ada' },
-    kyc: [{ kyc_level: 'level_1', status: 'verified', verified_at: '2026-05-01T10:00:00Z', provider: 'dojah' }],
-    claims: [{ claim_type: 'kyc_verified', provider: 'dojah', proof_hash: 'ref_1', expires_at: null }],
+    kyc: [{ kyc_level: 'level_1', status: 'verified', verified_at: '2026-05-01T10:00:00Z', provider: 'persona' }],
+    claims: [{ claim_type: 'kyc_verified', provider: 'persona', proof_hash: 'ref_1', expires_at: null }],
   };
   const calls = [];
   const track = (name, fn) => async (...args) => { calls.push({ name, args }); return fn(...args); };
