@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Test an INFRA integration - INFRA's sandbox (test credentials, test users, test ID numbers, event simulations, the data deletion test, Base Sepolia for PayV, ENVIRONMENT_MISMATCH rules) and automated tests with a fake INFRA (one client module, stubbed responses in INFRA's real shapes, signed webhook and credential fixtures). Use when the user asks to test INFRA sign-in, Connect, PayV or webhooks, set up INFRA sandbox or test users, write unit/integration tests for INFRA code, mock INFRA, or get test ID numbers.
+description: Test an INFRA integration - INFRA's sandbox (test credentials, test users, test ID numbers, event simulations, the data deletion test, test networks and test tokens for PayV, ENVIRONMENT_MISMATCH rules) and automated tests with a fake INFRA (one client module, stubbed responses in INFRA's real shapes, signed webhook and credential fixtures). Use when the user asks to test INFRA sign-in, Connect, PayV or webhooks, set up INFRA sandbox or test users, write unit/integration tests for INFRA code, mock INFRA, or get test ID numbers.
 ---
 
 # Testing an INFRA integration
@@ -25,7 +25,7 @@ with the live docs, the docs win; tell the user about the difference.
 | Verify a test user | Sign in as them at https://accounts.infraidentity.com; verification asks for a test ID number. The address check then passes at once with a made-up address. |
 | Events | Next to each test user, send any event (ID rejected, ID expiring soon, ID expired, address no longer verified, person removed the app…) to the test webhook. Payloads carry `"simulated": true`; the test user doesn't change. |
 | Going live | Pass the data deletion test (INFRA sends a deletion for a test user to the deletion callback URL; the app confirms it), then generate live keys (password + emailed code). |
-| PayV | Test credentials settle on Base Sepolia with test USDC: https://faucet.circle.com (network Base Sepolia). |
+| PayV | Test credentials settle on the test networks: test USDC on Base Sepolia or Solana Devnet from https://faucet.circle.com, or mUSDG on Robinhood Chain Testnet (anyone can mint it: `mint(to, amount)` on `0x8be9442b64c227a3b24e10a28e9a196bac9cd718`). See https://docs.infraidentity.com/payv#test-tokens. |
 
 Test ID numbers:
 

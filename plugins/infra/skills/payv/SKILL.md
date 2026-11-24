@@ -1,12 +1,12 @@
 ---
 name: payv
-description: Build INFRA Pay-As-You-Verify (PayV) - paying a small USDC fee on Base, per verification, to reuse a person's existing INFRA verification through the x402 protocol, version 2 (402 quote, sign an EIP-3009 transfer, retry with PAYMENT-SIGNATURE). Covers the person paying from their own wallet in a dApp, the app sponsoring the fee from a server wallet, strict payer mode with wallet linking, idempotent retries, and testing on Base Sepolia. Use when the user mentions INFRA PayV, Pay-As-You-Verify, paying per verification, x402 with INFRA, USDC verification fees, or a 402 from /payv/verification.
+description: Build INFRA Pay-As-You-Verify (PayV) - paying a small stablecoin fee (USDC on Base or Solana, USDG on Robinhood Chain), per verification, to reuse a person's existing INFRA verification through the x402 protocol, version 2 (402 quote, sign an EIP-3009 transfer, retry with PAYMENT-SIGNATURE). Covers the person paying from their own wallet in a dApp, the app sponsoring the fee from a server wallet, strict payer mode with wallet linking, idempotent retries, and testing on the test networks (test USDC, mUSDG). Use when the user mentions INFRA PayV, Pay-As-You-Verify, paying per verification, x402 with INFRA, USDC verification fees, or a 402 from /payv/verification.
 ---
 
 # INFRA Pay-As-You-Verify (PayV)
 
-PayV replaces a monthly plan with a fee per verification reuse, paid in USDC
-on Base through the open x402 protocol. Becoming verified is always free for
+PayV replaces a monthly plan with a fee per verification reuse, paid in stablecoins
+on Base, Robinhood Chain or Solana through the open x402 protocol. Becoming verified is always free for
 the person; PayV only charges when an app reuses that verification. **Payment
 is never consent**: the person must have approved the app with INFRA Connect
 first.
@@ -26,7 +26,7 @@ with the live docs, the docs win; tell the user about the difference.
 | Billing model | The app must be switched to PayV: developer portal → app → Settings → Billing model → Pay-As-You-Verify. An app is on a plan **or** PayV, never both. |
 | Fee, token, network | Whatever the quote says (`amount_display`, `asset_symbol`, `accepts[0]`). **Never hard-code them.** |
 | Protocol | **x402 version 2** only. The quote's PaymentRequired is in the `PAYMENT-REQUIRED` header (base64) and the body; you pay with a version 2 PaymentPayload, base64, in the `PAYMENT-SIGNATURE` header. Version 1 (`X-PAYMENT`) gets `400 X402_VERSION_UNSUPPORTED`. |
-| Networks | CAIP-2 ids. Test credentials: `eip155:84532` (Base Sepolia, test USDC, sandbox users only). Live: `eip155:8453` (Base, real USDC). |
+| Networks | `accepts` has one option per network; pay any one (`accepts[0]` is the default). Each option has a `chain` object: `id`, `chain_id`, `name`, `network`, `family` (`evm` or `solana`), `testnet`, `token`, `decimals`, `explorer`, `test_tokens` (display only, not signed; INFRA strips it if echoed). Live: `eip155:8453` Base USDC, `eip155:4663` Robinhood Chain USDG, `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` Solana USDC. Test (sandbox users only): `eip155:84532` Base Sepolia USDC, `eip155:46630` Robinhood Chain Testnet mUSDG, `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` Solana Devnet USDC. |
 | Quote lifetime | 10 minutes (`accepts[0].maxTimeoutSeconds`) |
 | Payment | x402 `exact` scheme: an EIP-3009 `TransferWithAuthorization` on the USDC contract in `accepts[0].asset`, for `accepts[0].amount`, to `payTo`. Wrapped as `{ x402Version: 2, resource, accepted: accepts[0], payload: { signature, authorization }, extensions }` (echo the quote's `resource` and `extensions`), base64, in `PAYMENT-SIGNATURE`. The payer needs USDC only, no ETH (the facilitator pays gas). |
 | Extensions | Echo `extensions` from the quote unchanged. It carries INFRA's Base builder code (`builder-code`), which credits the payment to INFRA on Base. Costs nothing, signs nothing extra. |
@@ -156,8 +156,11 @@ it's refused before anything is charged.
 ## Testing
 
 Test credentials + a test user (developer portal → app → Test), verified
-with test ID number `22222222222`. Payments settle on Base Sepolia: get test USDC
-for the paying wallet at https://faucet.circle.com (network Base Sepolia).
+with test ID number `22222222222`. Payments settle on the test networks. Test USDC for Base Sepolia or Solana Devnet:
+https://faucet.circle.com. Test mUSDG on Robinhood Chain Testnet: anyone can mint it with
+`mint(to, amount)` on `0x8be9442b64c227a3b24e10a28e9a196bac9cd718` (6 decimals), from a wallet with
+a little testnet ETH (https://faucet.testnet.chain.robinhood.com). The paying wallet needs no gas.
+Steps and code: https://docs.infraidentity.com/payv#test-tokens.
 Unit-test against a stubbed INFRA (`infra:testing`): quote → pay → data,
 expired quote, `PAYER_MISMATCH`, a timeout on the pay call followed by a
 replay, and strict-mode linking.
@@ -181,4 +184,4 @@ replay, and strict-mode linking.
 - [ ] One `Idempotency-Key` per purchase, sent with the quote; pay-call retries are safe.
 - [ ] Strict mode (if used) links the wallet before pricing.
 - [ ] Every error above handled with a plain message.
-- [ ] Tested on Base Sepolia with test credentials.
+- [ ] Tested on a test network (Base Sepolia, Robinhood Chain Testnet or Solana Devnet) with test credentials.
