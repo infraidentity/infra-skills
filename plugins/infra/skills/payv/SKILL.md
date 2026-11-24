@@ -121,7 +121,10 @@ required, and INFRA checks the wallet **before** pricing:
    You never send a user id; INFRA takes the person from the payment request.
 3. The wallet signs `message` with `personal_sign` (plain text, not a payment).
 4. `POST /payv/wallet-links/:challenge_id/signature` `{ payment_request_id, signature }` → `awaiting_user`.
-   The person approves the link in their INFRA app.
+   The answer has `approval_url`: open it in a new tab (`window.open` from the person's click; if blocked,
+   show an "Approve in INFRA" link). It's INFRA Accounts' one-tap Approve/Deny page, which closes itself
+   afterwards. Never skip it: the wallet signature only proves control of the wallet, the approval proves the
+   INFRA account holder agrees. Only open URLs that start with `https://accounts.infraidentity.com/approve/`.
 5. Poll `GET /payv/wallet-links/:challenge_id?payment_request_id=…` every few
    seconds until `linked` (or `denied` / `expired`; stop and explain).
 6. New quote (new `Idempotency-Key`, same `payer_address`), sign, pay.
